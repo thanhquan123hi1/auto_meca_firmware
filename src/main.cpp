@@ -4,10 +4,13 @@
 
 #include "config.h"
 #include "motor_control.h"
+#include "obstacle_guard.h"
+#include "telemetry_udp.h"
 
 namespace {
 WiFiUDP udp;
 uint32_t lastCommandTime = 0;
+uint32_t lastDistanceLogAt = 0;
 bool failsafeStopped = false;
 char lastAppliedCommand = 'S';
 
@@ -31,18 +34,59 @@ bool isValidCommand(char cmd) {
   }
 }
 
-void startAccessPoint() {
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, WIFI_AP_CHANNEL);
+bool startAccessPoint() {
+  constexpr uint8_t MAX_AP_RETRIES = 3;
 
-  Serial.println();
-  Serial.println("=== WiFi AP Started ===");
-  Serial.print("SSID: ");
-  Serial.println(WIFI_AP_SSID);
-  Serial.print("Password: ");
-  Serial.println(WIFI_AP_PASSWORD);
-  Serial.print("AP IP: ");
-  Serial.println(WiFi.softAPIP());
+  WiFi.persistent(false);
+  WiFi.disconnect(true, true);
+  delay(200);
+
+  for (uint8_t attempt = 1; attempt <= MAX_AP_RETRIES; ++attempt) {
+    WiFi.mode(WIFI_OFF);
+    delay(120);
+    WiFi.mode(WIFI_AP);
+    WiFi.setSleep(false);
+    if (!WiFi.softAPConfig(WIFI_AP_LOCAL_IP, WIFI_AP_GATEWAY, WIFI_AP_SUBNET)) {
+      Serial.println("WARN: softAPConfig failed, continuing with default AP IP");
+    }
+    delay(150);
+
+    const bool ok = WiFi.softAP(
+        WIFI_AP_SSID,
+        WIFI_AP_PASSWORD,
+        WIFI_AP_CHANNEL,
+        WIFI_AP_HIDDEN,
+        WIFI_AP_MAX_CLIENTS
+    );
+    delay(200);
+
+    if (ok) {
+      Serial.println();
+      Serial.println("=== WiFi AP Started ===");
+      Serial.print("Attempt: ");
+      Serial.println(attempt);
+      Serial.print("SSID: ");
+      Serial.println(WIFI_AP_SSID);
+      Serial.print("Password: ");
+      Serial.println(WIFI_AP_PASSWORD);
+      Serial.print("AP IP: ");
+      Serial.println(WiFi.softAPIP());
+      Serial.print("AP channel: ");
+      Serial.println(WIFI_AP_CHANNEL);
+      Serial.print("AP max clients: ");
+      Serial.println(WIFI_AP_MAX_CLIENTS);
+      Serial.print("WiFi mode: ");
+      Serial.println(static_cast<int>(WiFi.getMode()));
+      return true;
+    }
+
+    Serial.print("ERROR: softAP failed on attempt ");
+    Serial.println(attempt);
+    delay(300);
+  }
+
+  Serial.println("FATAL: WiFi AP failed after retries");
+  return false;
 }
 
 void startUdpServer() {
@@ -84,18 +128,28 @@ void processUdp() {
     return;
   }
 
-  const bool ok = handleCommand(cmd);
+  rememberTelemetryPeer(udp.remoteIP(), udp.remotePort());
+
+  const char safeCmd = guardCommand(cmd);
+  const bool ok = handleCommand(safeCmd);
   if (!ok) {
     applySafeStop("Command handler rejected cmd -> STOP");
     return;
   }
 
   lastCommandTime = millis();
-  failsafeStopped = (cmd == 'S');
-  lastAppliedCommand = cmd;
+  failsafeStopped = (safeCmd == 'S');
+  lastAppliedCommand = safeCmd;
+
+  if (safeCmd != cmd) {
+    Serial.print("GUARD: ");
+    Serial.print(cmd);
+    Serial.print(" -> ");
+    Serial.println(safeCmd);
+  }
 
   Serial.print("CMD: ");
-  Serial.print(cmd);
+  Serial.print(safeCmd);
   Serial.print(" from ");
   Serial.print(udp.remoteIP());
   Serial.print(":");
@@ -103,7 +157,6 @@ void processUdp() {
   Serial.print(" size=");
   Serial.println(bytesRead);
 
-  // Neu packet dai hon 1 byte thi van xu ly byte dau, nhung canh bao de debug.
   if (bytesRead != 1) {
     Serial.print("WARN: expected 1-byte UDP command, got ");
     Serial.println(bytesRead);
@@ -128,20 +181,39 @@ void setup() {
   Serial.println("Booting ESP32-S3 Mecanum UDP firmware...");
 
   initMotors();
+  initObstacleGuard();
   stopMotors();
   lastCommandTime = millis();
+  lastDistanceLogAt = 0;
   failsafeStopped = true;
   lastAppliedCommand = 'S';
 
-  startAccessPoint();
-  startUdpServer();
-
-  Serial.println("System ready. Waiting for UDP commands...");
+  if (startAccessPoint()) {
+    initTelemetry();
+    startUdpServer();
+    Serial.println("System ready. Waiting for UDP commands...");
+  } else {
+    Serial.println("System degraded: WiFi AP unavailable, UDP server not started.");
+  }
 }
 
 void loop() {
+  updateObstacleGuard();
+  setTelemetryDistance(getGuardDistanceCm());
+  setTelemetryGuardActive(isGuardActive());
   processUdp();
+  updateTelemetry();
   updateMotors();
   handleFailsafe();
+
+  const uint32_t now = millis();
+  if ((now - lastDistanceLogAt) > 1000UL) {
+    lastDistanceLogAt = now;
+    Serial.print("DIST: ");
+    Serial.print(getGuardDistanceCm(), 1);
+    Serial.print(" cm | AP clients: ");
+    Serial.println(WiFi.softAPgetStationNum());
+  }
+
   delay(5);
 }

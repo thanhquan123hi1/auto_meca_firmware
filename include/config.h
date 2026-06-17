@@ -8,6 +8,11 @@
 #define WIFI_AP_SSID      "Mecanum-Car"
 #define WIFI_AP_PASSWORD  "12345678"
 #define WIFI_AP_CHANNEL   1
+#define WIFI_AP_HIDDEN    0
+#define WIFI_AP_MAX_CLIENTS 4
+#define WIFI_AP_LOCAL_IP  IPAddress(192, 168, 4, 1)
+#define WIFI_AP_GATEWAY   IPAddress(192, 168, 4, 1)
+#define WIFI_AP_SUBNET    IPAddress(255, 255, 255, 0)
 #define UDP_PORT          4210
 
 // ============================================================
@@ -22,12 +27,12 @@
 // ============================================================
 #define PWM_FREQUENCY         20000
 #define PWM_RESOLUTION        8
-#define MOTOR_SPEED_DEFAULT   140
-#define ROTATE_SPEED_DEFAULT  200
+#define MOTOR_SPEED_DEFAULT   120
+#define ROTATE_SPEED_DEFAULT  150
 
 // Soft-start / soft-reverse de giam giat, giam sut ap.
-#define PWM_RAMP_STEP         12
-#define PWM_RAMP_TICK_MS      6UL
+#define PWM_RAMP_STEP         8
+#define PWM_RAMP_TICK_MS      10UL
 
 // ============================================================
 //  DAO CHIEU RIENG TUNG BANH
@@ -89,3 +94,20 @@
 #define RL_CH2   5
 #define RR_CH1   6
 #define RR_CH2   7
+
+// ============================================================
+//  CAM BIEN SIEU AM HC-SR04
+//
+//  Echo -> GPIO12, Trig -> GPIO20.
+//  ESP32 dong vai tro lop an toan tang thap: chan lenh tien khi
+//  vat can o gan, lui ngan khi qua gan. Android van quyet dinh huong ne.
+// ============================================================
+#define ULTRASONIC_TRIG_PIN               20
+#define ULTRASONIC_ECHO_PIN               12
+#define ULTRASONIC_MEASURE_INTERVAL_MS    60UL
+#define ULTRASONIC_TIMEOUT_US             30000UL   // ~500cm max range
+#define ULTRASONIC_MIN_VALID_CM           2.0f      // duoi nguong nay coi la nhieu/loi
+#define ULTRASONIC_AVOID_DISTANCE_CM      30.0f     // <= : chan tien (S)
+#define ULTRASONIC_EMERGENCY_DISTANCE_CM  12.0f     // <= : lui ngan (B)
+#define ULTRASONIC_MEDIAN_SAMPLES         5
+#define EMERGENCY_REVERSE_MS              300UL
