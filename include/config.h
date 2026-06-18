@@ -28,7 +28,7 @@
 #define PWM_FREQUENCY         20000
 #define PWM_RESOLUTION        8
 #define MOTOR_SPEED_DEFAULT   120
-#define ROTATE_SPEED_DEFAULT  150
+#define ROTATE_SPEED_DEFAULT  165
 #define FORWARD_DIAGONAL_SPEED 130
 
 // Soft-start / soft-reverse de giam giat, giam sut ap.
