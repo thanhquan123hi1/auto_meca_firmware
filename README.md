@@ -1,4 +1,4 @@
-# ⚡ Auto-Meca Firmware | ESP32-S3 Mecanum Motion Controller
+# Auto-Meca Firmware | ESP32-S3 Mecanum Motion Controller
 
 <div align="center">
 
@@ -9,13 +9,13 @@
 
 **Firmware điều khiển phần cứng cho xe 4 bánh Mecanum tự hành chạy trên vi điều khiển ESP32-S3, hỗ trợ phát Wi-Fi SoftAP, nhận lệnh điều hướng qua UDP, tích hợp cảm biến siêu âm HC-SR04 chống va chạm và cơ chế Failsafe tự động.**
 
-[🔗 Liên kết Android Station](#-lien-ket-app-android-thi-giac) • [🔌 Sơ đồ chân Pinout](#-so-do-chan-pinout--phan-cung) • [📡 Giao thức mạng](#-cau-hinh-mang--giao-thuc-udp) • [🛡️ Cơ chế an toàn Failsafe](#-co-che-an-toan-failsafe) • [🚀 Nạp chương trình](#-huong-dan-bien-dich--nap-firmware)
+[Liên kết Android Station](#lien-ket-app-android-thi-giac) • [Sơ đồ chân Pinout](#so-do-chan-pinout--phan-cung) • [Giao thức mạng](#cau-hinh-mang--giao-thuc-udp) • [Cơ chế an toàn Failsafe](#co-che-an-toan-failsafe) • [Nạp chương trình](#huong-dan-bien-dich--nap-firmware)
 
 </div>
 
 ---
 
-## 📌 Giới thiệu & Vai trò
+## Giới thiệu & Vai trò
 
 Firmware này được thiết kế để chạy trên kit **ESP32-S3**, đóng vai trò là tầng chấp hành phần cứng (Low-Level Motion Execution) của hệ thống xe tự hành Auto-Meca:
 1. **Phát mạng Wi-Fi SoftAP độc lập:** Tự tạo điểm truy cập mạng nội bộ `Mecanum-Car` để điện thoại Android và Laptop kết nối trực tiếp, không cần router Wi-Fi ngoài.
@@ -27,7 +27,7 @@ Firmware này được thiết kế để chạy trên kit **ESP32-S3**, đóng 
 
 ---
 
-## 🔗 Liên kết App Android Thị Giác
+## Liên kết App Android Thị Giác
 
 Firmware này nhận lệnh điều khiển mức cao từ ứng dụng thị giác máy tính chạy trên điện thoại Android:
 
@@ -38,7 +38,7 @@ Firmware này nhận lệnh điều khiển mức cao từ ứng dụng thị gi
 
 ---
 
-## 🔌 Sơ đồ chân Pinout & Phần cứng
+## Sơ đồ chân Pinout & Phần cứng
 
 Cấu hình chân được quy định chi tiết trong file [`include/config.h`](include/config.h):
 
@@ -60,7 +60,7 @@ Cấu hình chân được quy định chi tiết trong file [`include/config.h`
 
 ---
 
-## 📡 Cấu hình mạng & Giao thức UDP
+## Cấu hình mạng & Giao thức UDP
 
 ### 1. Thông số Wi-Fi SoftAP
 ```text
@@ -86,7 +86,7 @@ Mỗi gói tin UDP chỉ chứa **1 ký tự ASCII**:
 
 ---
 
-## 🛡️ Cơ chế an toàn Failsafe
+## Cơ chế an toàn Failsafe
 
 Để đảm bảo xe không bao giờ chạy ngoài tầm kiểm soát:
 
@@ -99,7 +99,7 @@ Mỗi gói tin UDP chỉ chứa **1 ký tự ASCII**:
 
 ---
 
-## 🚀 Hướng dẫn biên dịch & Nạp Firmware
+## Hướng dẫn biên dịch & Nạp Firmware
 
 ### 1. Chuẩn bị
 - Cài đặt [PlatformIO IDE](https://platformio.org/) trên VSCode hoặc cài [PlatformIO Core CLI](https://docs.platformio.org/en/latest/core/index.html).
@@ -123,7 +123,7 @@ pio device monitor --baud 115200
 
 ---
 
-## 📂 Cấu trúc thư mục
+## Cấu trúc thư mục
 
 ```text
 auto_meca_firmware/
